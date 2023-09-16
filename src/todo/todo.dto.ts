@@ -1,7 +1,8 @@
 export class CreateTodoDTO {
     title: string;
-    date: string | null;
-    tasks: string[]
+    date: string;
+    createdOn: string;
+    tasks: string[];
 }
 
 export class TodoDTO extends CreateTodoDTO {
