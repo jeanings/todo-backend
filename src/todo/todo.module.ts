@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
-import { TodoSchema } from './todo.schema';
+import { Todo, TodoSchema } from './todo.schema';
 
 
 @Module({
     imports: [
         MongooseModule.forFeature([{
-                name: 'Todo',
-                schema: TodoSchema,
-                collection: 'Todos'
+            name: Todo.name,
+            schema: TodoSchema,
+            // collection: 'Todos'
         }])
     ],
     controllers: [TodoController],

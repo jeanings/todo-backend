@@ -4,7 +4,6 @@ import { HydratedDocument, SchemaTypes, ObjectId } from 'mongoose';
 
 export type TodoDoc = HydratedDocument<Todo>;
 
-
 @Schema()
 export class Todo {
     @Prop({ required: true, type: SchemaTypes.ObjectId })
@@ -25,6 +24,5 @@ export class Todo {
         default: undefined
     };
 }
-
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);
