@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Types } from 'mongoose';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
 
@@ -15,11 +16,12 @@ describe("TodoController", () => {
     });
 
     describe("CRUD routes and services", () => {
-        const testTodoId: string = 'testId';
+        const testTodoId: Types.ObjectId = new Types.ObjectId();
         const testTodo = {
             id: testTodoId,
             title: 'Test todo',
-            date: null,
+            date: new Date,
+            createdOn: new Date,
             tasks: ['test']
         };
 
@@ -33,11 +35,11 @@ describe("TodoController", () => {
         });
 
         it("/update should return 'collection with updated todo'", () => {
-            expect(app.update(testTodoId, testTodo)).toBe(`collection with updated todo ${testTodoId}`);
+            expect(app.update(testTodoId.toString(), testTodo)).toBe(`collection with updated todo ${testTodoId}`);
         });
         
         it("/delete should return 'collection with deleted todo'", () => {
-            expect(app.delete(testTodoId)).toBe('');
+            expect(app.delete(testTodoId.toString())).toBe('');
         });
     });
 });
