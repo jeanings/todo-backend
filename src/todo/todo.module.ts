@@ -9,8 +9,7 @@ import { Todo, TodoSchema } from './todo.schema';
     imports: [
         MongooseModule.forFeature([{
             name: Todo.name,
-            schema: TodoSchema,
-            // collection: 'Todos'
+            schema: TodoSchema
         }])
     ],
     controllers: [TodoController],

@@ -1,14 +1,11 @@
 import { Types } from 'mongoose';
 
 
-export class CreateTodoDTO {
+export class TodoDTO {
+    id?: Types.ObjectId | string;
     title: string;
-    date: Date;
-    createdOn: Date;
+    date?: string;
     tasks: string[];
-}
-
-export class TodoDTO extends CreateTodoDTO {
-    id: Types.ObjectId;
-    color?: 'solid' | 'red' | 'amber' | 'green' | 'transparent' | null;
+    color?: 'grey' | 'solid' | 'red' | 'amber' | 'green' | 'transparent' | null;
+    completed: boolean;
 }

@@ -1,28 +1,26 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, SchemaTypes, ObjectId } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 
 export type TodoDoc = HydratedDocument<Todo>;
 
+
 @Schema()
 export class Todo {
-    @Prop({ required: true, type: SchemaTypes.ObjectId })
-    id: ObjectId;
-
     @Prop({ required: true })
-    title: String;
+    title: string;
 
     @Prop({ required: false })
-    date: Date;
+    date?: Date;
 
     @Prop({ required: true, default: Date.now })
     createdOn: Date;
 
     @Prop({ required: true, type: [String] })
-    tasks: {
-        type: [String],
-        default: undefined
-    };
+    tasks: string[]
+
+    @Prop({ required: true, default: false })
+    completed: boolean
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);
