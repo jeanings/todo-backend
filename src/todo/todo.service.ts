@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { TodoDTO } from './todo.dto';
 import { Todo, TodoDoc } from './todo.schema';
 
@@ -10,10 +10,21 @@ export class TodoService {
     constructor(@InjectModel(Todo.name) private readonly todoModel: Model<TodoDoc>) {}
 
     async create(request: TodoDTO): Promise<TodoDTO[]> {
+        // Parse multi-line string from request into individual tasks.
+        let parsedTasks: string[] = [];
+        if (typeof request.tasks === 'string') {
+            if (request.tasks.includes('\n')) {
+                parsedTasks = request.tasks.split('\n')
+            }
+            else {
+                parsedTasks = [request.tasks]
+            }
+        }
+       
         const insertRequest: Todo = {
             title: request.title,
             createdOn: new Date,
-            tasks: request.tasks,
+            tasks: parsedTasks,
             completed: false
         };
         // Add date if exists (otherwise it's spot-type).
@@ -71,10 +82,10 @@ export class TodoService {
 
 
     getAllSortedColoredTodos(todoDocs: TodoDoc[]): TodoDTO[] {
-    /* ==============================================================
+    /* ---------------------------------------------------------------
         Helper method to return sorted and 'colored' array of todos,
         ready for serving to front end.
-    ============================================================== */
+    --------------------------------------------------------------- */
         // Build response with list of 'colored' todos.
         const responseColoredTodos = todoDocs.reduce((coloredTodos, doc) => {
             const coloredTodo: TodoDTO = {
@@ -100,7 +111,7 @@ export class TodoService {
 
 
     getAndAddDate(date: string | Date | undefined, todoObj: TodoDTO | Todo): void {
-    /* ===========================================================================
+    /* --------------------------------------------------------------------------------
         Helper method to check and add dates, its type depends on what object
         is being passed in.
 
@@ -110,7 +121,7 @@ export class TodoService {
             Comes from Todo schema, adding to response object to front end.
         date: undefined
             Todo is of spot-type, do nothing.
-    ============================================================================ */
+    --------------------------------------------------------------------------------- */
         if (!date) {
             // No dates to add, todo is a spot-type.
             return;
@@ -129,7 +140,7 @@ export class TodoService {
 
 
     getTodoColor(dateString: string) {
-    /* ===========================================================================
+    /* ----------------------------------------------------------------------------
         Assigns 'color' based on how far away parameter date is from current day.
         'grey'
             Past todos.
@@ -150,7 +161,7 @@ export class TodoService {
         'blank'
             Tasks more than 4 days out.
             Next weeks~.
-    ============================================================================ */
+    ---------------------------------------------------------------------------- */
         const now: Date = new Date();
         const todoDate: Date = new Date(dateString);
         const dayDifference = Math.floor(
