@@ -12,7 +12,7 @@ export class TodoController {
 
     @Post('create')
     @HttpCode(201)  // 'Created'
-    async create(@Body() request: TodoDTO): Promise<TodoDTO> {
+    async create(@Body() request: TodoDTO): Promise<TodoDTO[]> {
         const response = await this.todoService.create(request);
         return response;
     }
@@ -26,7 +26,7 @@ export class TodoController {
     
     @Patch('update/:id')
     @HttpCode(200)  // 'OK'
-    async update(@Param('id') id: string, @Body() request: TodoDTO): Promise<TodoDTO> {
+    async update(@Param('id') id: string, @Body() request: TodoDTO): Promise<TodoDTO[]> {
         const response = await this.todoService.update(id, request);
         return response;
     }

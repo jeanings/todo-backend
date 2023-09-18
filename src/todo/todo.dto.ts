@@ -1,11 +1,11 @@
-import { Types } from 'mongoose';
+import { Schema, Types } from 'mongoose';
 
 
 export class TodoDTO {
-    id?: Types.ObjectId | string;
+    id?: Schema.Types.ObjectId | Types.ObjectId | string;
     title: string;
     date?: string;
     tasks: string[];
-    color?: 'grey' | 'solid' | 'red' | 'amber' | 'green' | 'transparent' | null;
+    color?: 'grey' | 'solid' | 'red' | 'amber' | 'green' | 'transparent' | 'blank';
     completed: boolean;
 }

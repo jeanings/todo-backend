@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { domainToASCII } from 'url';
+import { Model, Types } from 'mongoose';
 import { TodoDTO } from './todo.dto';
 import { Todo, TodoDoc } from './todo.schema';
 
@@ -10,7 +9,7 @@ import { Todo, TodoDoc } from './todo.schema';
 export class TodoService {
     constructor(@InjectModel(Todo.name) private readonly todoModel: Model<TodoDoc>) {}
 
-    async create(request: TodoDTO): Promise<TodoDTO> {
+    async create(request: TodoDTO): Promise<TodoDTO[]> {
         const insertRequest: Todo = {
             title: request.title,
             createdOn: new Date,
@@ -20,24 +19,62 @@ export class TodoService {
         // Add date if exists (otherwise it's spot-type).
         this.getAndAddDate(request.date, insertRequest);
 
-        const insertedTodo = await this.todoModel.create(insertRequest);
-        const responseTodo: TodoDTO = {
-            id: insertedTodo._id.toString(),
-            title: insertedTodo.title,
-            tasks: insertedTodo.tasks,
-            color: this.getTodoColor(request.date),
-            completed: insertedTodo.completed
-        };
-        this.getAndAddDate(insertedTodo.date, responseTodo);
-
-        return responseTodo;
+        await this.todoModel.create(insertRequest);
+      
+        // Gets all docs, sorted by date.
+        const todoDocs = await this.todoModel.find({}).sort({date: 1}).exec();
+        // Build response with list of 'colored' todos.
+        const responseColoredTodos = this.getAllSortedColoredTodos(todoDocs);
+        return responseColoredTodos;
     }
 
 
     async getAll(): Promise<TodoDTO[]> {
         // Gets all docs, sorted by date.
         const todoDocs = await this.todoModel.find({}).sort({date: 1}).exec();
+        // Build response with list of 'colored' todos.
+        const responseColoredTodos = this.getAllSortedColoredTodos(todoDocs);
+        return responseColoredTodos;
+    }
 
+
+    async update(id: string, request: TodoDTO): Promise<TodoDTO[]> {
+        const updateRequest = {
+            title: request.title,
+            tasks: request.tasks,
+            completed: request.completed
+        };
+        // Add date if exists (otherwise it's spot-type).
+        this.getAndAddDate(request.date, updateRequest);
+
+        await this.todoModel.findByIdAndUpdate(id, updateRequest);
+
+        // Gets all docs, sorted by date.
+        const todoDocs = await this.todoModel.find({}).sort({date: 1}).exec();
+        // Build response with list of 'colored' todos.
+        const responseColoredTodos = this.getAllSortedColoredTodos(todoDocs);
+        return responseColoredTodos;
+    }
+
+
+    async delete(id: string): Promise<TodoDTO> {
+        const deletedTodo: TodoDoc = await this.todoModel.findByIdAndDelete({ _id: id }).exec();
+        const responseDeletedTodo: TodoDTO = {
+            id: deletedTodo._id.toString(),
+            title: deletedTodo.title,
+            tasks: deletedTodo.tasks,
+            completed: deletedTodo.completed
+        };
+        
+        return responseDeletedTodo;
+    }
+
+
+    getAllSortedColoredTodos(todoDocs: TodoDoc[]): TodoDTO[] {
+    /* ==============================================================
+        Helper method to return sorted and 'colored' array of todos,
+        ready for serving to front end.
+    ============================================================== */
         // Build response with list of 'colored' todos.
         const responseColoredTodos = todoDocs.reduce((coloredTodos, doc) => {
             const coloredTodo: TodoDTO = {
@@ -59,43 +96,7 @@ export class TodoService {
         }, []);
 
         return responseColoredTodos;
-    }
-
-
-    async update(id: string, request: TodoDTO): Promise<TodoDTO> {
-        const updateRequest = {
-            title: request.title,
-            tasks: request.tasks,
-            completed: request.completed
-        };
-        // Add date if exists (otherwise it's spot-type).
-        this.getAndAddDate(request.date, updateRequest);
-
-        const updatedTodo: TodoDoc = await this.todoModel.findByIdAndUpdate(id, updateRequest);
-        const responseTodo: TodoDTO = {
-            id: updatedTodo._id.toString(),
-            title: updatedTodo.title,
-            tasks: updatedTodo.tasks,
-            color: this.getTodoColor(request.date),
-            completed: updatedTodo.completed
-        }
-        this.getAndAddDate(updatedTodo.date, responseTodo);
-
-        return responseTodo;
-    }
-
-
-    async delete(id: string): Promise<TodoDTO> {
-        const deletedTodo: TodoDoc = await this.todoModel.findByIdAndDelete({ _id: id }).exec();
-        const responseDeletedTodo: TodoDTO = {
-            id: deletedTodo._id.toString(),
-            title: deletedTodo.title,
-            tasks: deletedTodo.tasks,
-            completed: deletedTodo.completed
-        };
-        
-        return responseDeletedTodo;
-    }
+    };
 
 
     getAndAddDate(date: string | Date | undefined, todoObj: TodoDTO | Todo): void {
@@ -127,7 +128,7 @@ export class TodoService {
     }
 
 
-    getTodoColor(dateString: string | null) {
+    getTodoColor(dateString: string) {
     /* ===========================================================================
         Assigns 'color' based on how far away parameter date is from current day.
         'grey'
@@ -146,6 +147,9 @@ export class TodoService {
         'transparent'
             Tasks for 4 days out.
             Friday
+        'blank'
+            Tasks more than 4 days out.
+            Next weeks~.
     ============================================================================ */
         const now: Date = new Date();
         const todoDate: Date = new Date(dateString);
@@ -175,7 +179,7 @@ export class TodoService {
                 todoColor = 'transparent';
                 break;
             default:
-                todoColor = null;
+                todoColor = 'blank';
         }
     
         return todoColor;
