@@ -162,9 +162,9 @@ export class TodoService {
             Tasks more than 4 days out.
             Next weeks~.
     ---------------------------------------------------------------------------- */
-        const now: Date = new Date();
+        const now = new Date(new Date().toDateString());    // Clears time, which affects calcs.
         const todoDate: Date = new Date(dateString);
-        const dayDifference = Math.floor(
+        const dayDifference = Math.floor(                   // Calcs based on 00:00:00.
             (todoDate.valueOf() - now.valueOf()) / (1000 * 60 * 60 * 24)
         );
     
