@@ -1,7 +1,7 @@
 import { 
     Body, Controller, Delete, 
     Get, HttpCode, Param, 
-    Patch, Post, Query } from '@nestjs/common';
+    Patch, Post } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { TodoDTO } from './todo.dto';
 
